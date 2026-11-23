@@ -1,0 +1,361 @@
+{
+  "name": "Recrutement 03 - Envoi de la décision",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 03 · Envoi de la décision\n\nUne réponse part au candidat **seulement quand le recruteur a rempli la colonne Décision** (À rencontrer / Non retenu). « En attente » ou une cellule vide : rien n’est envoyé. La colonne « Réponse envoyée » empêche tout double envoi.\n\n**À régler** : votre Google Sheet (déclencheur et mise à jour), le nom de votre entreprise dans « Votre entreprise », votre adresse d’expédition.",
+        "width": 820,
+        "height": 240,
+        "color": 4
+      },
+      "id": "a6331581-23af-54f2-99a5-d5f6095b5a30",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Candidatures"
+        },
+        "event": "rowUpdate",
+        "options": {
+          "columnsToWatch": [
+            "Décision"
+          ]
+        }
+      },
+      "id": "e5c1cc8e-003b-5740-9301-9f43769ab149",
+      "name": "Décision saisie dans le tableau",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json[\"Décision\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "leftValue": "={{ $json[\"Réponse envoyée\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b9291662-aa52-5618-8cd6-012f5b892783",
+      "name": "Réponse à envoyer ?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        220,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "include": "all",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "entreprise",
+              "name": "entreprise",
+              "value": "BatiPro Services (exemple)",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "215e38a5-454d-5333-af6b-52c4eabf4a87",
+      "name": "Votre entreprise",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"Décision\"] }}",
+                    "rightValue": "À rencontrer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "À rencontrer"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"Décision\"] }}",
+                    "rightValue": "Non retenu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Non retenu"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ddcf15aa-f87d-52f8-a292-b005c34a5e02",
+      "name": "Selon la décision du recruteur",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Votre entreprise <recrutement@votre-entreprise.fr>",
+        "toEmail": "={{ $json.Email }}",
+        "subject": "=Votre candidature au poste {{ $json.Poste || 'proposé' }} : nous aimerions vous rencontrer",
+        "html": "=<p>Bonjour {{ $json.Nom }},</p><p>Votre candidature au poste de <b>{{ $json.Poste || 'proposé' }}</b> a retenu notre attention et nous aimerions vous rencontrer.</p><p>Pourriez-vous nous indiquer, en réponse à cet email, deux ou trois créneaux qui vous conviendraient la semaine prochaine ?</p><p>Au plaisir d’échanger avec vous,<br>L’équipe {{ $json.entreprise }}</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "430e6b96-f57c-5d88-9288-943e28c83cb3",
+      "name": "Inviter à un entretien",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Votre entreprise <recrutement@votre-entreprise.fr>",
+        "toEmail": "={{ $json.Email }}",
+        "subject": "=Votre candidature au poste {{ $json.Poste || 'proposé' }} chez {{ $json.entreprise }}",
+        "html": "=<p>Bonjour {{ $json.Nom }},</p><p>Merci pour l’intérêt que vous portez à notre entreprise et pour le temps consacré à votre candidature au poste de <b>{{ $json.Poste || 'proposé' }}</b>.</p><p>Après étude de votre dossier par notre équipe, nous ne donnerons pas suite pour ce poste. Ce choix tient aux besoins précis du poste et ne remet pas en cause la qualité de votre parcours.</p><p>Nous vous souhaitons une belle réussite dans vos recherches.</p><p>Cordialement,<br>L’équipe {{ $json.entreprise }}</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d88dd86d-c062-5b80-85d6-ea3acd050baf",
+      "name": "Répondre avec bienveillance (non retenu)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Candidatures"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "ID message"
+          ],
+          "value": {
+            "ID message": "={{ $('Votre entreprise').item.json['ID message'] }}",
+            "Réponse envoyée": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}"
+          },
+          "schema": [
+            {
+              "id": "ID message",
+              "displayName": "ID message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Réponse envoyée",
+              "displayName": "Réponse envoyée",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "21cb1314-25aa-539c-a0d1-92a992d47988",
+      "name": "Noter la réponse envoyée",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1100,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Décision saisie dans le tableau": {
+      "main": [
+        [
+          {
+            "node": "Réponse à envoyer ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Réponse à envoyer ?": {
+      "main": [
+        [
+          {
+            "node": "Votre entreprise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Votre entreprise": {
+      "main": [
+        [
+          {
+            "node": "Selon la décision du recruteur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selon la décision du recruteur": {
+      "main": [
+        [
+          {
+            "node": "Inviter à un entretien",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Répondre avec bienveillance (non retenu)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inviter à un entretien": {
+      "main": [
+        [
+          {
+            "node": "Noter la réponse envoyée",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Répondre avec bienveillance (non retenu)": {
+      "main": [
+        [
+          {
+            "node": "Noter la réponse envoyée",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

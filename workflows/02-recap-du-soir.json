@@ -1,0 +1,182 @@
+{
+  "name": "Recrutement 02 - Récapitulatif du soir",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 02 · Récapitulatif du soir\n\nChaque soir à 18 h, le recruteur reçoit **un seul email** avec les candidatures du jour, classées par score, et les alertes de manipulation.\n\n**À régler** : votre Google Sheet, votre adresse d’expédition et l’adresse du recruteur (`vous@votre-entreprise.fr`).",
+        "width": 700,
+        "height": 220,
+        "color": 4
+      },
+      "id": "81a367ee-1dfd-570f-9746-a6143b78ae28",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "id": "df144d33-6c1d-5b1b-8aed-68d45c7f8951",
+      "name": "Chaque soir à 18 h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Candidatures"
+        },
+        "options": {}
+      },
+      "id": "032f2ff7-cdac-577f-81f8-bd59e35f4447",
+      "name": "Lire le tableau des candidatures",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.Date }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "={{ $today.toFormat(\"yyyy-MM-dd\") }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "988db71d-3c10-54d7-a47c-346cd243e1d3",
+      "name": "Candidatures du jour",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "candidats",
+        "options": {}
+      },
+      "id": "4ace8366-5a7b-5ca6-9923-080a8316ee37",
+      "name": "Regrouper les candidatures",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Votre entreprise <recrutement@votre-entreprise.fr>",
+        "toEmail": "vous@votre-entreprise.fr",
+        "subject": "={{ $json.candidats.length }} nouvelles candidatures aujourd’hui, {{ $json.candidats.filter(c => Number(c.Score) >= 70).length }} à regarder en priorité",
+        "html": "=<p>Bonjour,</p><p><b>{{ $json.candidats.length }}</b> nouvelles candidatures aujourd’hui. Les plus pertinentes, poste par poste :</p>{{ Object.entries($json.candidats.reduce((g, c) => { const k = c.Poste || 'Poste non précisé'; (g[k] = g[k] || []).push(c); return g; }, {})).map(([poste, liste]) => '<h3 style=\"margin:16px 0 4px\">' + poste + ' (' + liste.length + ')</h3><ol>' + liste.slice().sort((a, b) => Number(b.Score) - Number(a.Score)).slice(0, 5).map(c => '<li><b>' + c.Nom + '</b> : ' + c.Score + '/100. ' + c['Résumé'] + (c['Alerte manipulation'] ? ' <b style=\"color:#c00\">[Alerte : ' + c['Alerte manipulation'] + ']</b>' : '') + '</li>').join('') + '</ol>').join('') }}<p>Rappel : rien n’est envoyé aux candidats tant que vous n’avez pas rempli la colonne <b>Décision</b>.</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dc2e0f19-dc01-58de-a6e6-118663d68865",
+      "name": "Envoyer le récapitulatif au recruteur",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Chaque soir à 18 h": {
+      "main": [
+        [
+          {
+            "node": "Lire le tableau des candidatures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire le tableau des candidatures": {
+      "main": [
+        [
+          {
+            "node": "Candidatures du jour",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidatures du jour": {
+      "main": [
+        [
+          {
+            "node": "Regrouper les candidatures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regrouper les candidatures": {
+      "main": [
+        [
+          {
+            "node": "Envoyer le récapitulatif au recruteur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
