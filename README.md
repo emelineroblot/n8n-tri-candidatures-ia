@@ -2,7 +2,7 @@
 
 **L'IA trie, vous décidez.** Ce système lit chaque CV reçu par email, le compare à votre fiche de poste, répond à chaque candidat et vous prépare la liste des personnes à rencontrer. Aucun refus ne part sans que vous l'ayez décidé.
 
-C'est le système présenté dans la vidéo YouTube de la chaîne [EMDIGITAL](https://www.youtube.com/@emdigital1237) : 146 candidatures analysées pour 22 centimes d'IA, et 20 minutes de lecture au lieu de 5 heures.
+C'est le système présenté dans la vidéo YouTube de la chaîne [EMDIGITAL](https://www.youtube.com/@emdigitalfr) : 146 candidatures analysées pour 22 centimes d'IA, et 20 minutes de lecture au lieu de 5 heures.
 
 Ce dépôt contient :
 
