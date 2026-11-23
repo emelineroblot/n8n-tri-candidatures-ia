@@ -76,7 +76,7 @@ Les deux autres workflows :
 
 Pour mes clients, je vais un cran plus loin : une interface à leur nom, plusieurs offres avec chacune sa grille, la réanalyse d'un CV en un clic.
 
-Vous recrutez bientôt et vous voulez savoir si c'est adapté à votre entreprise ? Je propose un **diagnostic gratuit de 30 minutes** : [prendre rendez-vous](LIEN_DIAGNOSTIC).
+Vous recrutez bientôt et vous voulez savoir si c'est adapté à votre entreprise ? Je propose un **diagnostic gratuit de 30 minutes** : [prendre rendez-vous](https://tidycal.com/emelineroblot/30-minute-meeting?utm_source=github&utm_medium=readme&utm_campaign=ia-recrutement-tri-candidatures).
 
 Emeline Roblot · [EMDIGITAL](https://emdigital.fr/?utm_source=github&utm_medium=readme&utm_campaign=ia-recrutement-tri-candidatures)
 
